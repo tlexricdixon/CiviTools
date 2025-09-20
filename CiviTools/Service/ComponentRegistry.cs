@@ -1,14 +1,15 @@
 ﻿using CiviTools.Models;
-namespace Service;
+using CiviTools.Models.Extentions;
+namespace CiviTools.Service;
 
 public class ComponentRegistry
 {
     public record Descriptor(
-string TypeKey,
-string DisplayName,
-Func<UiComponentBase> Factory,
-Func<IEnumerable<PropMeta>> DesignProps
-);
+        string TypeKey,
+        string DisplayName,
+        Func<UiComponentBase> Factory,
+        Func<IEnumerable<PropMeta>> DesignProps
+    );
 
 
     private readonly List<Descriptor> _descriptors = new();
@@ -17,13 +18,12 @@ Func<IEnumerable<PropMeta>> DesignProps
     public ComponentRegistry()
     {
         // Register built-ins
-        Register(
-        new Descriptor(
-        "text",
-        "Text Field",
-        () => new UiTextField { Title = "Text", Placeholder = "Enter text" },
-        () => UiTextField.DesignProps()
-        ));
+        Register(new Descriptor(
+           "text",
+           "Text Field",
+           () => new UiTextField { Title = "Text", Placeholder = "Enter text" },
+           () => UIExtentions.DesignProps(new())   // ← compile-time safe, no instance
+       ));
 
 
         Register(
@@ -31,7 +31,7 @@ Func<IEnumerable<PropMeta>> DesignProps
         "select",
         "Select",
         () => new UiSelect { Title = "Select", Items = new() { "One", "Two", "Three" } },
-        () => UiSelect.DesignProps()
+        () => UiSelectExtensions.DesignProps(new())
         ));
 
 
@@ -40,7 +40,7 @@ Func<IEnumerable<PropMeta>> DesignProps
         "date",
         "Date Picker",
         () => new UiDatePicker { Title = "Date" },
-        () => UiDatePicker.DesignProps()
+        () => UiDatePickerExtensions.DesignProps(new())
         ));
 
 
@@ -49,7 +49,7 @@ Func<IEnumerable<PropMeta>> DesignProps
         "grid",
         "Grid",
         () => new UiGrid { Title = "Grid" },
-        () => UiGrid.DesignProps()
+        () => UiGridExtensions.DesignProps(new())
         ));
     }
 

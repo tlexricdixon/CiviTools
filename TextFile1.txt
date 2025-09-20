@@ -1,0 +1,679 @@
+// =============================
+// Blazor Server App: Low?Code Designer Starter
+// ===============================================================
+// This single file contains all source snippets you need to paste
+// into a new Blazor Server project to get a working MVP designer
+// with reusable UI components (TextField, Select, DatePicker, Grid),
+// a canvas, a toolbox, a property panel, and a live preview.
+// ===============================================================
+// HOW TO USE
+// 1) dotnet new blazorserver -n LowCodeDesigner
+// 2) Replace/Add files below into the created project structure
+// 3) dotnet run (or F5 in VS). Navigate to /designer
+// ===============================================================
+
+// -----------------------------
+// LowCodeDesigner.csproj (replace)
+// -----------------------------
+/*
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.QuickGrid" Version="8.0.7" />
+  </ItemGroup>
+</Project>
+*/
+
+// -----------------------------
+// Program.cs (replace)
+// -----------------------------
+/*
+using LowCodeDesigner.Services;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddRazorComponents()
+    .AddInteractiveServerComponents();
+
+// UI registry for reusable components
+builder.Services.AddSingleton<ComponentRegistry>();
+
+var app = builder.Build();
+
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler("/Error", createScopeForErrors: true);
+}
+
+app.UseStaticFiles();
+app.UseAntiforgery();
+
+app.MapRazorComponents<App>()
+   .AddInteractiveServerRenderMode();
+
+app.Run();
+*/
+
+// -----------------------------
+// App.razor (new)
+// -----------------------------
+/*
+<Router AppAssembly="typeof(App).Assembly">
+    <Found Context="routeData">
+        <RouteView RouteData="routeData" DefaultLayout="typeof(Shared.MainLayout)" />
+        <FocusOnNavigate RouteData="routeData" Selector="h1" />
+    </Found>
+    <NotFound>
+        <PageTitle>Not found</PageTitle>
+        <LayoutView Layout="typeof(Shared.MainLayout)">
+            <p role="alert">Sorry, there's nothing at this address.</p>
+        </LayoutView>
+    </NotFound>
+</Router>
+*/
+
+// -----------------------------
+// _Imports.razor (new)
+// -----------------------------
+/*
+@using System
+@using System.Linq
+@using System.Collections.Generic
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Web
+@using LowCodeDesigner
+@using LowCodeDesigner.UI
+@using LowCodeDesigner.UI.Components
+@using LowCodeDesigner.Services
+*/
+
+// -----------------------------
+// Shared/MainLayout.razor (new)
+// -----------------------------
+/*
+@inherits LayoutComponentBase
+
+<div class="container py-4">
+    <header class="mb-3 d-flex align-items-center justify-content-between">
+        <h1 class="h4 m-0">Low?Code Designer</h1>
+        <nav class="d-flex gap-2">
+            <a href="/designer">Designer</a>
+            <a href="/">Home</a>
+        </nav>
+    </header>
+    <main>
+        @Body
+    </main>
+</div>
+
+@code { }
+*/
+
+// -----------------------------
+// Pages/Home.razor (new)
+// -----------------------------
+/*
+@page "/"
+<PageTitle>Home</PageTitle>
+<p>Go to the <a href="/designer">Designer</a> to build a form with reusable components.</p>
+*/
+
+// ===============================================================
+// UI Core: Models + Registry
+// ===============================================================
+// File: UI/ComponentModels.cs (new)
+// -----------------------------
+/*
+namespace LowCodeDesigner.UI;
+
+public abstract class UiComponentBase
+{
+    public Guid Id { get; set; } = Guid.NewGuid();
+    public string Key => Id.ToString("N");
+    public string Title { get; set; } = string.Empty; // label/title in UI
+
+    // Common layout props
+    public int Cols { get; set; } = 12; // 1..12 grid columns
+    public string CssClass { get; set; } = string.Empty;
+}
+
+// A node in the canvas tree
+public class ComponentNode
+{
+    public UiComponentBase Component { get; set; }
+    public List<ComponentNode> Children { get; set; } = new();
+    public ComponentNode(UiComponentBase component) => Component = component;
+}
+
+// Property metadata for design-time editing
+public record PropMeta(
+    string Name,
+    string Label,
+    string Type, // "string", "int", "bool", "select"
+    Func<UiComponentBase, object?> Getter,
+    Action<UiComponentBase, object?> Setter,
+    IEnumerable<(string Value, string Label)>? Options = null
+);
+*/
+
+// File: Services/ComponentRegistry.cs (new)
+// -----------------------------
+/*
+using LowCodeDesigner.UI;
+using LowCodeDesigner.UI.Components;
+
+namespace LowCodeDesigner.Services;
+
+public class ComponentRegistry
+{
+    public record Descriptor(
+        string TypeKey,
+        string DisplayName,
+        Func<UiComponentBase> Factory,
+        Func<IEnumerable<PropMeta>> DesignProps
+    );
+
+    private readonly List<Descriptor> _descriptors = new();
+
+    public ComponentRegistry()
+    {
+        // Register built-ins
+        Register(
+            new Descriptor(
+                "text",
+                "Text Field",
+                () => new UiTextField { Title = "Text", Placeholder = "Enter text" },
+                () => UiTextField.DesignProps()
+            ));
+
+        Register(
+            new Descriptor(
+                "select",
+                "Select",
+                () => new UiSelect { Title = "Select", Items = new() { "One", "Two", "Three" } },
+                () => UiSelect.DesignProps()
+            ));
+
+        Register(
+            new Descriptor(
+                "date",
+                "Date Picker",
+                () => new UiDatePicker { Title = "Date" },
+                () => UiDatePicker.DesignProps()
+            ));
+
+        Register(
+            new Descriptor(
+                "grid",
+                "Grid",
+                () => new UiGrid { Title = "Grid" },
+                () => UiGrid.DesignProps()
+            ));
+    }
+
+    public void Register(Descriptor d) => _descriptors.Add(d);
+    public IEnumerable<Descriptor> All() => _descriptors;
+}
+*/
+
+// ===============================================================
+// UI Components (Reusable)
+// ===============================================================
+// File: UI/Components/UiTextField.razor (new)
+// -----------------------------
+/*
+@namespace LowCodeDesigner.UI.Components
+@inherits UiTextFieldBase
+
+<div class="mb-3 @CssClass" style="grid-column: span @Cols">
+  <label class="form-label">@Title</label>
+  <input class="form-control" placeholder="@Placeholder" @bind="Value" />
+  @if (!string.IsNullOrWhiteSpace(Help))
+  {
+    <div class="form-text">@Help</div>
+  }
+</div>
+*/
+
+// File: UI/Components/UiTextField.razor.cs (new)
+// -----------------------------
+/*
+using Microsoft.AspNetCore.Components;
+
+namespace LowCodeDesigner.UI.Components;
+
+public class UiTextField : UiComponentBase
+{
+    public string Placeholder { get; set; } = string.Empty;
+    public string Help { get; set; } = string.Empty;
+}
+
+public class UiTextFieldBase : ComponentBase
+{
+    [Parameter] public UiTextField Model { get; set; } = new();
+
+    // convenience passthroughs for markup
+    protected string Title => Model.Title;
+    protected string Placeholder => Model.Placeholder;
+    protected string Help => Model.Help;
+    protected int Cols => Model.Cols;
+    protected string CssClass => Model.CssClass;
+
+    protected string? Value { get; set; }
+}
+
+public static class UiTextFieldExtensions
+{
+    public static IEnumerable<PropMeta> DesignProps(this UiTextField _)
+    {
+        yield return new PropMeta("Title", "Label", "string", c => ((UiTextField)c).Title, (c, v) => ((UiTextField)c).Title = v?.ToString() ?? "");
+        yield return new PropMeta("Placeholder", "Placeholder", "string", c => ((UiTextField)c).Placeholder, (c, v) => ((UiTextField)c).Placeholder = v?.ToString() ?? "");
+        yield return new PropMeta("Help", "Help text", "string", c => ((UiTextField)c).Help, (c, v) => ((UiTextField)c).Help = v?.ToString() ?? "");
+        yield return new PropMeta("Cols", "Width (1-12)", "int", c => ((UiTextField)c).Cols, (c, v) => ((UiTextField)c).Cols = int.TryParse(v?.ToString(), out var i) ? Math.Clamp(i,1,12) : 12);
+        yield return new PropMeta("CssClass", "CSS class", "string", c => ((UiTextField)c).CssClass, (c, v) => ((UiTextField)c).CssClass = v?.ToString() ?? "");
+    }
+}
+*/
+
+// File: UI/Components/UiSelect.razor (new)
+// -----------------------------
+/*
+@namespace LowCodeDesigner.UI.Components
+@inherits UiSelectBase
+
+<div class="mb-3 @CssClass" style="grid-column: span @Cols">
+  <label class="form-label">@Title</label>
+  <select class="form-select" @bind="Selected">
+    @foreach (var it in Items)
+    {
+      <option value="@it">@it</option>
+    }
+  </select>
+</div>
+*/
+
+// File: UI/Components/UiSelect.razor.cs (new)
+// -----------------------------
+/*
+using Microsoft.AspNetCore.Components;
+
+namespace LowCodeDesigner.UI.Components;
+
+public class UiSelect : UiComponentBase
+{
+    public List<string> Items { get; set; } = new();
+}
+
+public class UiSelectBase : ComponentBase
+{
+    [Parameter] public UiSelect Model { get; set; } = new();
+
+    protected string Title => Model.Title;
+    protected List<string> Items => Model.Items;
+    protected int Cols => Model.Cols;
+    protected string CssClass => Model.CssClass;
+
+    protected string? Selected { get; set; }
+}
+
+public static class UiSelectExtensions
+{
+    public static IEnumerable<PropMeta> DesignProps(this UiSelect _)
+    {
+        yield return new PropMeta("Title", "Label", "string", c => ((UiSelect)c).Title, (c, v) => ((UiSelect)c).Title = v?.ToString() ?? "");
+        yield return new PropMeta("Items", "Items (comma?sep)", "string", c => string.Join(",", ((UiSelect)c).Items), (c, v) => ((UiSelect)c).Items = (v?.ToString() ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries|StringSplitOptions.TrimEntries).ToList());
+        yield return new PropMeta("Cols", "Width (1-12)", "int", c => ((UiSelect)c).Cols, (c, v) => ((UiSelect)c).Cols = int.TryParse(v?.ToString(), out var i) ? Math.Clamp(i,1,12) : 12);
+        yield return new PropMeta("CssClass", "CSS class", "string", c => ((UiSelect)c).CssClass, (c, v) => ((UiSelect)c).CssClass = v?.ToString() ?? "");
+    }
+}
+*/
+
+// File: UI/Components/UiDatePicker.razor (new)
+// -----------------------------
+/*
+@namespace LowCodeDesigner.UI.Components
+@inherits UiDatePickerBase
+
+<div class="mb-3 @CssClass" style="grid-column: span @Cols">
+  <label class="form-label">@Title</label>
+  <input type="date" class="form-control" @bind-value="Value" />
+</div>
+*/
+
+// File: UI/Components/UiDatePicker.razor.cs (new)
+// -----------------------------
+/*
+using Microsoft.AspNetCore.Components;
+
+namespace LowCodeDesigner.UI.Components;
+
+public class UiDatePicker : UiComponentBase { }
+
+public class UiDatePickerBase : ComponentBase
+{
+    [Parameter] public UiDatePicker Model { get; set; } = new();
+
+    protected string Title => Model.Title;
+    protected int Cols => Model.Cols;
+    protected string CssClass => Model.CssClass;
+
+    protected DateTime? Value { get; set; }
+}
+
+public static class UiDatePickerExtensions
+{
+    public static IEnumerable<PropMeta> DesignProps(this UiDatePicker _)
+    {
+        yield return new PropMeta("Title", "Label", "string", c => ((UiDatePicker)c).Title, (c, v) => ((UiDatePicker)c).Title = v?.ToString() ?? "");
+        yield return new PropMeta("Cols", "Width (1-12)", "int", c => ((UiDatePicker)c).Cols, (c, v) => ((UiDatePicker)c).Cols = int.TryParse(v?.ToString(), out var i) ? Math.Clamp(i,1,12) : 12);
+        yield return new PropMeta("CssClass", "CSS class", "string", c => ((UiDatePicker)c).CssClass, (c, v) => ((UiDatePicker)c).CssClass = v?.ToString() ?? "");
+    }
+}
+*/
+
+// File: UI/Components/UiGrid.razor (new)
+// -----------------------------
+/*
+@namespace LowCodeDesigner.UI.Components
+@inherits UiGridBase
+
+<div class="mb-3 @CssClass" style="grid-column: span @Cols">
+  <label class="form-label">@Title</label>
+  <Microsoft.AspNetCore.Components.QuickGrid QuickGridItems="Rows" Class="table table-striped table-sm">
+    @foreach (var col in Columns)
+    {
+        <PropertyColumn Property="@col" Title="@col.Name" />
+    }
+  </Microsoft.AspNetCore.Components.QuickGrid>
+</div>
+*/
+
+// File: UI/Components/UiGrid.razor.cs (new)
+// -----------------------------
+/*
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.QuickGrid;
+using System.Reflection;
+
+namespace LowCodeDesigner.UI.Components;
+
+public class UiGrid : UiComponentBase
+{
+    // Simple demo dataset to show the grid without wiring data connectors yet
+    public IEnumerable<object> Rows { get; set; } = new List<object>
+    {
+        new { Id=1, Name="Alice", Email="alice@example.com" },
+        new { Id=2, Name="Bob", Email="bob@example.com" },
+        new { Id=3, Name="Charlie", Email="charlie@example.com" },
+    };
+}
+
+public class UiGridBase : ComponentBase
+{
+    [Parameter] public UiGrid Model { get; set; } = new();
+
+    protected string Title => Model.Title;
+    protected int Cols => Model.Cols;
+    protected string CssClass => Model.CssClass;
+
+    protected IEnumerable<object> Rows => Model.Rows;
+
+    protected IEnumerable<PropertyInfo> Columns => Rows.FirstOrDefault()?.GetType().GetProperties() ?? Array.Empty<PropertyInfo>();
+}
+
+public static class UiGridExtensions
+{
+    public static IEnumerable<PropMeta> DesignProps(this UiGrid _)
+    {
+        yield return new PropMeta("Title", "Label", "string", c => ((UiGrid)c).Title, (c, v) => ((UiGrid)c).Title = v?.ToString() ?? "");
+        yield return new PropMeta("Cols", "Width (1-12)", "int", c => ((UiGrid)c).Cols, (c, v) => ((UiGrid)c).Cols = int.TryParse(v?.ToString(), out var i) ? Math.Clamp(i,1,12) : 12);
+        yield return new PropMeta("CssClass", "CSS class", "string", c => ((UiGrid)c).CssClass, (c, v) => ((UiGrid)c).CssClass = v?.ToString() ?? "");
+    }
+}
+*/
+
+// ===============================================================
+// Designer Surface (Toolbox + Canvas + Properties + Preview)
+// ===============================================================
+// File: Pages/Designer.razor (new)
+// -----------------------------
+/*
+@page "/designer"
+@inject ComponentRegistry Registry
+
+<PageTitle>Designer</PageTitle>
+
+<style>
+  .designer-grid { display: grid; grid-template-columns: 260px 1fr 320px; gap: 16px; }
+  .panel { border: 1px solid #ddd; border-radius: 8px; padding: 12px; }
+  .canvas { border: 2px dashed #bbb; border-radius: 10px; padding: 12px; min-height: 300px; }
+  .node { border: 1px solid #e5e5e5; padding: 8px; border-radius: 8px; margin-bottom: 8px; background: #fafafa; }
+  .node.selected { outline: 2px solid #2d6cdf; background: #eef4ff; }
+  .toolbar button { margin-right: 6px; }
+</style>
+
+<div class="designer-grid">
+  <!-- Toolbox -->
+  <section class="panel">
+    <h5 class="mb-3">Toolbox</h5>
+    @foreach (var d in Registry.All())
+    {
+        <button class="btn btn-outline-primary btn-sm w-100 mb-2" @onclick="() => AddComponent(d)">@d.DisplayName</button>
+    }
+    <hr />
+    <div class="toolbar">
+        <button class="btn btn-outline-secondary btn-sm" disabled="@(_selected is null)" @onclick="MoveUp">Move Up</button>
+        <button class="btn btn-outline-secondary btn-sm" disabled="@(_selected is null)" @onclick="MoveDown">Move Down</button>
+        <button class="btn btn-outline-danger btn-sm" disabled="@(_selected is null)" @onclick="RemoveSelected">Remove</button>
+    </div>
+  </section>
+
+  <!-- Canvas -->
+  <section class="panel">
+    <h5 class="mb-3">Canvas</h5>
+    <div class="canvas">
+      @if (!Canvas.Any())
+      {
+        <div class="text-muted">Add components from the toolbox…</div>
+      }
+      else
+      {
+        @for (int i=0; i<Canvas.Count; i++)
+        {
+            var node = Canvas[i];
+            var cls = _selected?.Component.Id == node.Component.Id ? "node selected" : "node";
+            <div class="@cls" @onclick="(() => Select(node))">
+                <strong>@node.Component.Title</strong>
+                <div class="small text-muted">@node.Component.GetType().Name</div>
+            </div>
+        }
+      }
+    </div>
+  </section>
+
+  <!-- Properties -->
+  <section class="panel">
+    <h5 class="mb-3">Properties</h5>
+    @if (_selected is null)
+    {
+        <div class="text-muted">Select a component on the canvas.</div>
+    }
+    else
+    {
+        @foreach (var pm in _designProps)
+        {
+            <div class="mb-2">
+                <label class="form-label">@pm.Label</label>
+                @switch (pm.Type)
+                {
+                    case "string":
+                        <input class="form-control" value="@Convert.ToString(pm.Getter(_selected.Component))" @onchange="(e => SetProp(pm, e.Value))" />
+                        break;
+                    case "int":
+                        <input type="number" class="form-control" value="@Convert.ToString(pm.Getter(_selected.Component))" @onchange="(e => SetProp(pm, e.Value))" />
+                        break;
+                    case "bool":
+                        <input type="checkbox" class="form-check-input" checked="@Equals(pm.Getter(_selected.Component), true)" @onchange="(e => SetProp(pm, (bool?)e.Value == true))" />
+                        break;
+                    case "select":
+                        <select class="form-select" @onchange="(e => SetProp(pm, e.Value))">
+                            @if (pm.Options is not null)
+                            {
+                                @foreach (var opt in pm.Options)
+                                {
+                                    var sel = Equals(Convert.ToString(pm.Getter(_selected.Component)), opt.Value);
+                                    <option value="@opt.Value" selected="@sel">@opt.Label</option>
+                                }
+                            }
+                        </select>
+                        break;
+                    default:
+                        <div class="text-muted">Unsupported editor: @pm.Type</div>
+                        break;
+                }
+            </div>
+        }
+    }
+  </section>
+</div>
+
+<hr class="my-4" />
+
+<h5>Live Preview</h5>
+<FormHost Nodes="Canvas" />
+
+@code {
+    private List<ComponentNode> Canvas { get; set; } = new();
+    private ComponentNode? _selected;
+    private IEnumerable<PropMeta> _designProps = Enumerable.Empty<PropMeta>();
+
+    void AddComponent(ComponentRegistry.Descriptor d)
+    {
+        var comp = d.Factory();
+        var node = new ComponentNode(comp);
+        Canvas.Add(node);
+        Select(node);
+        StateHasChanged();
+    }
+
+    void Select(ComponentNode node)
+    {
+        _selected = node;
+        _designProps = Registry.All().FirstOrDefault(r => r.Factory().GetType() == node.Component.GetType())?.DesignProps() ?? Enumerable.Empty<PropMeta>();
+    }
+
+    void SetProp(PropMeta pm, object? val)
+    {
+        if (_selected is null) return;
+        pm.Setter(_selected.Component, val);
+        StateHasChanged();
+    }
+
+    void MoveUp()
+    {
+        if (_selected is null) return;
+        var i = Canvas.FindIndex(n => n.Component.Id == _selected.Component.Id);
+        if (i > 0)
+        {
+            (Canvas[i-1], Canvas[i]) = (Canvas[i], Canvas[i-1]);
+        }
+    }
+
+    void MoveDown()
+    {
+        if (_selected is null) return;
+        var i = Canvas.FindIndex(n => n.Component.Id == _selected.Component.Id);
+        if (i >= 0 && i < Canvas.Count - 1)
+        {
+            (Canvas[i+1], Canvas[i]) = (Canvas[i], Canvas[i+1]);
+        }
+    }
+
+    void RemoveSelected()
+    {
+        if (_selected is null) return;
+        Canvas.RemoveAll(n => n.Component.Id == _selected.Component.Id);
+        _selected = null;
+        _designProps = Enumerable.Empty<PropMeta>();
+    }
+}
+*/
+
+// ===============================================================
+// Renderer: turns the in?memory tree into real components
+// ===============================================================
+// File: UI/FormHost.razor (new)
+// -----------------------------
+/*
+@namespace LowCodeDesigner.UI
+@using LowCodeDesigner.UI.Components
+@inherits FormHostBase
+
+<div class="row" style="row-gap: 8px;">
+  @foreach (var node in Nodes)
+  {
+    <div class="col-12">
+      @RenderNode(node)
+    </div>
+  }
+</div>
+*/
+
+// File: UI/FormHost.razor.cs (new)
+// -----------------------------
+/*
+using Microsoft.AspNetCore.Components;
+using LowCodeDesigner.UI.Components;
+
+namespace LowCodeDesigner.UI;
+
+public class FormHostBase : ComponentBase
+{
+    [Parameter] public IEnumerable<ComponentNode> Nodes { get; set; } = Enumerable.Empty<ComponentNode>();
+
+    protected RenderFragment RenderNode(ComponentNode node) => builder =>
+    {
+        var seq = 0;
+        switch (node.Component)
+        {
+            case UiTextField tf:
+                builder.OpenComponent(seq++, typeof(UiTextField));
+                builder.AddAttribute(seq++, "Model", tf);
+                builder.CloseComponent();
+                break;
+            case UiSelect sel:
+                builder.OpenComponent(seq++, typeof(UiSelect));
+                builder.AddAttribute(seq++, "Model", sel);
+                builder.CloseComponent();
+                break;
+            case UiDatePicker dp:
+                builder.OpenComponent(seq++, typeof(UiDatePicker));
+                builder.AddAttribute(seq++, "Model", dp);
+                builder.CloseComponent();
+                break;
+            case UiGrid grid:
+                builder.OpenComponent(seq++, typeof(UiGrid));
+                builder.AddAttribute(seq++, "Model", grid);
+                builder.CloseComponent();
+                break;
+            default:
+                builder.AddContent(seq++, $"Unsupported: {node.Component.GetType().Name}");
+                break;
+        }
+    };
+}
+*/
+
+// ===============================================================
+// OPTIONAL: Minimal CSS (wwwroot/css/site.css)
+// Add bootstrap via _Layout or your own styling.
+// ===============================================================
+/*
+body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; }
+.container { max-width: 1200px; }
+.btn + .btn { margin-left: .25rem; }
+*/

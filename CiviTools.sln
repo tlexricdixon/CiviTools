@@ -5,7 +5,10 @@ VisualStudioVersion = 17.14.36511.14 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CiviTools", "CiviTools\CiviTools.csproj", "{953A7267-D669-47B8-8A23-B3B82B405952}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CiviTools.Service", "CiviTools.Service\CiviTools.Service.csproj", "{5A3515E0-E299-4268-B0F2-3B4305D9C205}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8EC462FD-D22E-90A8-E5CE-7E832BA40C5D}"
+	ProjectSection(SolutionItems) = preProject
+		TextFile1.txt = TextFile1.txt
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +20,6 @@ Global
 		{953A7267-D669-47B8-8A23-B3B82B405952}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{953A7267-D669-47B8-8A23-B3B82B405952}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{953A7267-D669-47B8-8A23-B3B82B405952}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5A3515E0-E299-4268-B0F2-3B4305D9C205}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5A3515E0-E299-4268-B0F2-3B4305D9C205}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5A3515E0-E299-4268-B0F2-3B4305D9C205}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5A3515E0-E299-4268-B0F2-3B4305D9C205}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

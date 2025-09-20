@@ -1,9 +1,11 @@
 ﻿@inherits UiTextFieldBase
-<div class="mb-3 @CssClass" style="grid-column: span @Cols">
+
+<div class="mb-3 @CssClass" style="grid-column: span @Cols;">
     <label class="form-label">@Title</label>
-    <input class="form-control" placeholder="@Placeholder" @bind="Value" />
+    <input class="form-control" placeholder="@Placeholder" value="@Value" />
     @if (!string.IsNullOrWhiteSpace(Help))
     {
         <div class="form-text">@Help</div>
     }
 </div>
+
