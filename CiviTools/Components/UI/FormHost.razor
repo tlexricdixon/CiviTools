@@ -1,0 +1,13 @@
+﻿@namespace CiviTools.Models
+@using CiviTools.Components
+@inherits FormHostBase
+
+
+<div class="row" style="row-gap: 8px;">
+    @foreach (var node in Nodes)
+    {
+        <div class="col-12">
+            @RenderNode(node)
+        </div>
+    }
+</div>

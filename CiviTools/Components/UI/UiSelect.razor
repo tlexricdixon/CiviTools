@@ -1,0 +1,12 @@
+﻿@inherits UiSelectBase
+
+
+<div class="mb-3 @CssClass" style="grid-column: span @Cols">
+    <label class="form-label">@Title</label>
+    <select class="form-select" @bind="Selected">
+        @foreach (var it in Items)
+        {
+            <option value="@it">@it</option>
+        }
+    </select>
+</div>
