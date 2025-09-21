@@ -2,11 +2,14 @@
 
 
 <div class="mb-3 @CssClass" style="grid-column: span @Cols">
-<label class="form-label">@Title</label>
-<Microsoft.AspNetCore.Components.QuickGrid QuickGridItems="Rows" Class="table table-striped table-sm">
-@foreach (var col in Columns)
-{
-<PropertyColumn Property="@col" Title="@col.Name" />
-}
-</Microsoft.AspNetCore.Components.QuickGrid>
+  <label class="form-label">@Title</label>
+
+  <QuickGrid TGridItem="object" Items="Rows" Class="table table-striped table-sm">
+    @foreach (PropertyInfo col in Columns)
+    {
+      <TemplateColumn Title="@col.Name" Context="row">
+        @(col.GetValue(row)?.ToString())
+      </TemplateColumn>
+    }
+  </QuickGrid>
 </div>

@@ -1,17 +1,25 @@
 ﻿using CiviTools.Models;
 namespace CiviTools.Models.Extentions;
 
-public static class UIExtentions
+public static class UiTextFieldExtensions
 {
-    public static IEnumerable<PropMeta> DesignProps(this UiTextField _)
+    public static IReadOnlyList<PropMeta> DesignPropsStatic()
     {
-        yield return new PropMeta("Title", "Label", "string", c => ((UiTextField)c).Title, (c, v) => ((UiTextField)c).Title = v?.ToString() ?? "");
-        yield return new PropMeta("Placeholder", "Placeholder", "string", c => ((UiTextField)c).Placeholder, (c, v) => ((UiTextField)c).Placeholder = v?.ToString() ?? "");
-        yield return new PropMeta("Help", "Help text", "string", c => ((UiTextField)c).Help, (c, v) => ((UiTextField)c).Help = v?.ToString() ?? "");
-        yield return new PropMeta("Cols", "Width (1-12)", "int", c => ((UiTextField)c).Cols, (c, v) => ((UiTextField)c).Cols = int.TryParse(v?.ToString(), out var i) ? Math.Clamp(i, 1, 12) : 12);
-        yield return new PropMeta("CssClass", "CSS class", "string", c => ((UiTextField)c).CssClass, (c, v) => ((UiTextField)c).CssClass = v?.ToString() ?? "");
+        object? Get(UiComponentBase c, Func<UiTextField, object?> sel) => sel((UiTextField)c);
+        void Set(UiComponentBase c, Action<UiTextField> set) => set((UiTextField)c);
+
+        return new List<PropMeta>
+        {
+            new("Title","Label","string", c => Get(c,t=>t.Title),        (c,v)=>Set(c,t=>t.Title = v?.ToString() ?? "")),
+            new("Placeholder","Placeholder","string", c => Get(c,t=>t.Placeholder),(c,v)=>Set(c,t=>t.Placeholder = v?.ToString() ?? "")),
+            new("Help","Help text","string", c => Get(c,t=>t.Help),       (c,v)=>Set(c,t=>t.Help = v?.ToString() ?? "")),
+            new("Cols","Width (1-12)","int", c => Get(c,t=>t.Cols),       (c,v)=>Set(c,t=>t.Cols = int.TryParse(v?.ToString(), out var i) ? Math.Clamp(i,1,12) : 12)),
+            new("CssClass","CSS class","string", c => Get(c,t=>t.CssClass),(c,v)=>Set(c,t=>t.CssClass = v?.ToString() ?? "")),
+            new("InitialValue","Initial value","string", c=>Get(c,t=>t.InitialValue ?? ""), (c,v)=>Set(c,t=>t.InitialValue = v?.ToString()))
+        };
     }
 }
+
 public static class UiSelectExtensions
 {
     public static IEnumerable<PropMeta> DesignProps(this UiSelect _)

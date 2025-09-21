@@ -8,33 +8,32 @@ public partial class FormHostBase : ComponentBase
     [Parameter] public IEnumerable<ComponentNode> Nodes { get; set; } = Enumerable.Empty<ComponentNode>();
 
 
-    protected RenderFragment RenderNode(ComponentNode node) => builder =>
+    protected static RenderFragment RenderNode(ComponentNode node) => builder =>
     {
-        var seq = 0;
         switch (node.Component)
         {
-            case UiTextField tf:
-                builder.OpenComponent(seq++, typeof(UiTextField));
-                builder.AddAttribute(seq++, "Model", tf);
+            case Models.UiTextField tf:
+                builder.OpenComponent(0, typeof(UiTextField));
+                builder.AddAttribute(1, "Model", tf);
                 builder.CloseComponent();
                 break;
-            case UiSelect sel:
-                builder.OpenComponent(seq++, typeof(UiSelect));
-                builder.AddAttribute(seq++, "Model", sel);
+            case Models.UiSelect sel:
+                builder.OpenComponent(0, typeof(UiSelect));
+                builder.AddAttribute(1, "Model", sel);
                 builder.CloseComponent();
                 break;
-            case UiDatePicker dp:
-                builder.OpenComponent(seq++, typeof(UiDatePicker));
-                builder.AddAttribute(seq++, "Model", dp);
+            case Models.UiDatePicker dp:
+                builder.OpenComponent(0, typeof(UiDatePicker));
+                builder.AddAttribute(1, "Model", dp);
                 builder.CloseComponent();
                 break;
-            case UiGrid grid:
-                builder.OpenComponent(seq++, typeof(UiGrid));
-                builder.AddAttribute(seq++, "Model", grid);
+            case Models.UiGrid grid:
+                builder.OpenComponent(0, typeof(UiGrid));
+                builder.AddAttribute(1, "Model", grid);
                 builder.CloseComponent();
                 break;
             default:
-                builder.AddContent(seq++, $"Unsupported: {node.Component.GetType().Name}");
+                builder.AddContent(0, $"Unsupported: {node.Component.GetType().Name}");
                 break;
         }
     };

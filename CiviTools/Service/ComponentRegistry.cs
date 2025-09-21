@@ -1,4 +1,5 @@
-﻿using CiviTools.Models;
+﻿using CiviTools.Components.UI;
+using CiviTools.Models;
 using CiviTools.Models.Extentions;
 namespace CiviTools.Service;
 
@@ -19,18 +20,18 @@ public class ComponentRegistry
     {
         // Register built-ins
         Register(new Descriptor(
-           "text",
-           "Text Field",
-           () => new UiTextField { Title = "Text", Placeholder = "Enter text" },
-           () => UIExtentions.DesignProps(new())   // ← compile-time safe, no instance
-       ));
+            "text",
+            "Text Field",
+            () => new Models.UiTextField { Title = "Text", Placeholder = "Enter text" },
+            () => UiTextFieldBase.DesignProps
+        ));
 
 
         Register(
         new Descriptor(
         "select",
         "Select",
-        () => new UiSelect { Title = "Select", Items = new() { "One", "Two", "Three" } },
+        () => new Models.UiSelect { Title = "Select", Items = new() { "One", "Two", "Three" } },
         () => UiSelectExtensions.DesignProps(new())
         ));
 
@@ -39,7 +40,7 @@ public class ComponentRegistry
         new Descriptor(
         "date",
         "Date Picker",
-        () => new UiDatePicker { Title = "Date" },
+        () => new Models.UiDatePicker { Title = "Date" },
         () => UiDatePickerExtensions.DesignProps(new())
         ));
 
@@ -48,7 +49,7 @@ public class ComponentRegistry
         new Descriptor(
         "grid",
         "Grid",
-        () => new UiGrid { Title = "Grid" },
+        () => new Models.UiGrid { Title = "Grid" },
         () => UiGridExtensions.DesignProps(new())
         ));
     }
