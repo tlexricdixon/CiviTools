@@ -32,7 +32,7 @@ public class ComponentRegistry
         "select",
         "Select",
         () => new Models.UiSelect { Title = "Select", Items = new() { "One", "Two", "Three" } },
-        () => UiSelectExtensions.DesignProps(new())
+        () => UiSelectExtensions.DesignPropsStatic()
         ));
 
 
@@ -41,7 +41,7 @@ public class ComponentRegistry
         "date",
         "Date Picker",
         () => new Models.UiDatePicker { Title = "Date" },
-        () => UiDatePickerExtensions.DesignProps(new())
+        () => UiDatePickerExtensions.DesignPropsStatic()
         ));
 
 
@@ -50,7 +50,7 @@ public class ComponentRegistry
         "grid",
         "Grid",
         () => new Models.UiGrid { Title = "Grid" },
-        () => UiGridExtensions.DesignProps(new())
+        () => UiGridExtensions.DesignPropsStatic()
         ));
     }
 

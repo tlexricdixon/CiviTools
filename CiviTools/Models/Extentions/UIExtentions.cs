@@ -1,5 +1,4 @@
-﻿using CiviTools.Models;
-namespace CiviTools.Models.Extentions;
+﻿namespace CiviTools.Models.Extentions;
 
 public static class UiTextFieldExtensions
 {
@@ -22,29 +21,47 @@ public static class UiTextFieldExtensions
 
 public static class UiSelectExtensions
 {
-    public static IEnumerable<PropMeta> DesignProps(this UiSelect _)
+    public static IReadOnlyList<PropMeta> DesignPropsStatic()
     {
-        yield return new PropMeta("Title", "Label", "string", c => ((UiSelect)c).Title, (c, v) => ((UiSelect)c).Title = v?.ToString() ?? "");
-        yield return new PropMeta("Items", "Items (comma‑sep)", "string", c => string.Join(",", ((UiSelect)c).Items), (c, v) => ((UiSelect)c).Items = (v?.ToString() ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList());
-        yield return new PropMeta("Cols", "Width (1-12)", "int", c => ((UiSelect)c).Cols, (c, v) => ((UiSelect)c).Cols = int.TryParse(v?.ToString(), out var i) ? Math.Clamp(i, 1, 12) : 12);
-        yield return new PropMeta("CssClass", "CSS class", "string", c => ((UiSelect)c).CssClass, (c, v) => ((UiSelect)c).CssClass = v?.ToString() ?? "");
+        object? Get(UiComponentBase c, Func<UiSelect, object?> sel) => sel((UiSelect)c);
+        void Set(UiComponentBase c, Action<UiSelect> set) => set((UiSelect)c);
+
+        return new List<PropMeta>
+        {
+            new("Title", "Label", "string", c => Get(c, s => s.Title), (c, v) => Set(c, s => s.Title = v?.ToString() ?? "")),
+            new("Items", "Items (comma‑sep)", "string", c => Get(c, s => string.Join(",", s.Items)), (c, v) => Set(c, s => s.Items = (v?.ToString() ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList())),
+            new("Cols", "Width (1-12)", "int", c => Get(c, s => s.Cols), (c, v) => Set(c, s => s.Cols = int.TryParse(v?.ToString(), out var i) ? Math.Clamp(i, 1, 12) : 12)),
+            new("CssClass", "CSS class", "string", c => Get(c, s => s.CssClass), (c, v) => Set(c, s => s.CssClass = v?.ToString() ?? ""))
+        };
     }
 }
 public static class UiGridExtensions
 {
-    public static IEnumerable<PropMeta> DesignProps(this UiGrid _)
+    public static IReadOnlyList<PropMeta> DesignPropsStatic()
     {
-        yield return new PropMeta("Title", "Label", "string", c => ((UiGrid)c).Title, (c, v) => ((UiGrid)c).Title = v?.ToString() ?? "");
-        yield return new PropMeta("Cols", "Width (1-12)", "int", c => ((UiGrid)c).Cols, (c, v) => ((UiGrid)c).Cols = int.TryParse(v?.ToString(), out var i) ? Math.Clamp(i, 1, 12) : 12);
-        yield return new PropMeta("CssClass", "CSS class", "string", c => ((UiGrid)c).CssClass, (c, v) => ((UiGrid)c).CssClass = v?.ToString() ?? "");
+        object? Get(UiComponentBase c, Func<UiGrid, object?> sel) => sel((UiGrid)c);
+        void Set(UiComponentBase c, Action<UiGrid> set) => set((UiGrid)c);
+
+        return new List<PropMeta>
+        {
+            new("Title", "Label", "string", c => Get(c, g => g.Title), (c, v) => Set(c, g => g.Title = v?.ToString() ?? "")),
+            new("Cols", "Width (1-12)", "int", c => Get(c, g => g.Cols), (c, v) => Set(c, g => g.Cols = int.TryParse(v?.ToString(), out var i) ? Math.Clamp(i, 1, 12) : 12)),
+            new("CssClass", "CSS class", "string", c => Get(c, g => g.CssClass), (c, v) => Set(c, g => g.CssClass = v?.ToString() ?? ""))
+        };
     }
 }
 public static class UiDatePickerExtensions
 {
-    public static IEnumerable<PropMeta> DesignProps(this UiDatePicker _)
+    public static IReadOnlyList<PropMeta> DesignPropsStatic()
     {
-        yield return new PropMeta("Title", "Label", "string", c => ((UiDatePicker)c).Title, (c, v) => ((UiDatePicker)c).Title = v?.ToString() ?? "");
-        yield return new PropMeta("Cols", "Width (1-12)", "int", c => ((UiDatePicker)c).Cols, (c, v) => ((UiDatePicker)c).Cols = int.TryParse(v?.ToString(), out var i) ? Math.Clamp(i, 1, 12) : 12);
-        yield return new PropMeta("CssClass", "CSS class", "string", c => ((UiDatePicker)c).CssClass, (c, v) => ((UiDatePicker)c).CssClass = v?.ToString() ?? "");
+        object? Get(UiComponentBase c, Func<UiDatePicker, object?> sel) => sel((UiDatePicker)c);
+        void Set(UiComponentBase c, Action<UiDatePicker> set) => set((UiDatePicker)c);
+
+        return new List<PropMeta>
+        {
+            new("Title", "Label", "string", c => Get(c, d => d.Title), (c, v) => Set(c, d => d.Title = v?.ToString() ?? "")),
+            new("Cols", "Width (1-12)", "int", c => Get(c, d => d.Cols), (c, v) => Set(c, d => d.Cols = int.TryParse(v?.ToString(), out var i) ? Math.Clamp(i, 1, 12) : 12)),
+            new("CssClass", "CSS class", "string", c => Get(c, d => d.CssClass), (c, v) => Set(c, d => d.CssClass = v?.ToString() ?? ""))
+        };
     }
 }

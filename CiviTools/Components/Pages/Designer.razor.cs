@@ -79,13 +79,12 @@ namespace CiviTools.Components.Pages
             StateHasChanged(); // refresh to show visual hint
         }
 
-        public void OnDrop(int index)
+        void OnDrop(int index)
         {
             if (_dragIndex is null) return;
 
             var from = _dragIndex.Value;
             var to = index;
-
             if (from == to) { _dragIndex = _dropIndex = null; return; }
 
             var item = Canvas[from];
@@ -94,7 +93,6 @@ namespace CiviTools.Components.Pages
             Canvas.Insert(to, item);
 
             _dragIndex = _dropIndex = null;
-            StateHasChanged(); // Add this
         }
     }
 }

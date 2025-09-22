@@ -1,4 +1,5 @@
 ﻿using CiviTools.Models;
+using CiviTools.Models.Extentions;
 using Microsoft.AspNetCore.Components;
 
 namespace CiviTools.Components.UI;
@@ -18,6 +19,8 @@ public class UiSelectBase : ComponentBase
 
 
     protected string? Selected { get; set; }
+    public static IReadOnlyList<PropMeta> DesignProps { get; } = UiSelectExtensions.DesignPropsStatic();
+    public static IEnumerable<PropMeta> PropMetas => DesignProps;
 }
 
 

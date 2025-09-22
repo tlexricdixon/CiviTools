@@ -1,4 +1,5 @@
 ﻿using CiviTools.Models;
+using CiviTools.Models.Extentions;
 using Microsoft.AspNetCore.Components;
 
 namespace CiviTools.Components.UI;
@@ -14,6 +15,8 @@ public partial class UiDatePickerBase : ComponentBase
 
 
     protected DateTime? Value { get; set; }
+    public static IReadOnlyList<PropMeta> DesignProps { get; } = UiDatePickerExtensions.DesignPropsStatic();
+    public static IEnumerable<PropMeta> PropMetas => DesignProps;
 }
 
 
