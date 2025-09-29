@@ -23,75 +23,94 @@
         <button class="btn btn-outline-danger btn-sm" disabled="@(_selected is null)" @onclick="RemoveSelected">Remove</button>
     </div>
   </section>
+    <!-- Canvas -->
+    <section class="panel">
+        <h5 class="mb-3">Canvas</h5>
 
-  <!-- Canvas -->
-  <section class="panel">
-    <h5 class="mb-3">Canvas</h5>
-    <div class="canvas">
-      @if (!Canvas.Any())
-      {
-        <div class="text-muted">Add components from the toolbox…</div>
-      }
-      else
-      {
-                @for (int i = 0; i < Canvas.Count; i++)
+        <div class="canvas">
+            @if (!Canvas.Any())
+            {
+                <div class="text-muted">Add components from the toolbox…</div>
+            }
+            else
+            {
+                @foreach (var pair in Canvas.Select((n, i) => (node: n, index: i)))
                 {
-                    var node = Canvas[i];
-                    var cls = "node";
-                    if (_selected?.Component.Id == node.Component.Id) cls += " selected";
-                    if (_dropIndex == i) cls += " drop-hint";
+                    var node = pair.node;
+                    var index = pair.index;
 
-                    <div class="@cls"
+                    <div class="canvas-item @(GetItemCss(index))"
                          draggable="true"
-                         @ondragstart="@(() => OnDragStart(i))"
-                         @ondragover:preventDefault="true"
-                         @ondragover="@(() => OnDragOver(i))"
-                         @ondrop="@(() => OnDrop(i))"
-                         @onclick="@(() => Select(node))">
-                        <strong>@node.Component.Title</strong>
-                        <div class="small text-muted">@node.Component.GetType().Name</div>
+                         @ondragstart="(() => OnDragStart(index))"
+                         @ondragover="(() => OnDragOver(index))" @ondragover:preventDefault
+                         @ondragenter="(() => OnDragOver(index))" @ondragenter:preventDefault
+                         @ondrop="(() => OnDrop(index))" @ondrop:preventDefault
+                         @ondragleave="(() => OnDragLeave(index))"
+                         @onclick="(() => Select(node))"
+                         @key="node.Component.Id">
+
+                        <DynamicComponent Type="node.Component.ComponentType"
+                                          Parameters="node.Component.Params"
+                                          @key="node.Component.Id" />
                     </div>
                 }
-      }
-    </div>
-  </section>
+            }
+        </div>
+    </section>
 
-  <!-- Properties -->
-  <section class="panel">
-    <h5 class="mb-3">Properties</h5>
-    @if (_selected is null)
-    {
-        <div class="text-muted">Select a component on the canvas.</div>
-    }
-    else
-    {
-        @foreach (var pm in _designProps)
+
+
+    <!-- Properties -->
+    <section class="panel">
+        <h5 class="mb-3">Properties</h5>
+
+        @if (_selected is null)
         {
-            <div class="mb-2">
-                <label class="form-label">@pm.Label</label>
-                @switch (pm.Type)
-                {
-                    case "string":
-                        <input class="form-control" value="@Convert.ToString(pm.Getter(_selected.Component))"
-                               @onchange="(e => SetProp(pm, e.Value))" />
-                        break;
-                    case "int":
-                        <input type="number" class="form-control" value="@Convert.ToString(pm.Getter(_selected.Component))"
-                               @onchange="(e => SetProp(pm, e.Value))" />
-                        break;
-                    case "bool":
-                        <input type="checkbox" class="form-check-input"
-                               checked="@(Equals(pm.Getter(_selected.Component), true))"
-                               @onchange="(e => SetProp(pm, (bool?)e.Value == true))" />
-                        break;
-                    default:
-                        <div class="text-muted">Unsupported editor: @pm.Type</div>
-                        break;
-                }
-            </div>
+            <div class="text-muted">Select a component on the canvas.</div>
         }
-    }
-  </section>
+        else
+        {
+            var bag = _selected.Component.Params;
+            foreach (var pm in _selected.Component.GetDesignProps())
+            {
+                var current = pm.Getter(bag);
+
+                <div class="mb-2">
+                    <label class="form-label">@pm.Label</label>
+                    @switch (pm.Type)
+                    {
+                        case "string":
+                            <input class="form-control"
+                                   value="@Convert.ToString(current)"
+                                   @onchange="(e => SetProp(pm, e.Value))" />
+                            break;
+
+                        case "int":
+                            <input type="number" class="form-control"
+                                   value="@Convert.ToString(current)"
+                                   @onchange="(e => SetProp(pm, e.Value))" />
+                            break;
+
+                        case "bool":
+                            <input type="checkbox" class="form-check-input"
+                                   checked="@(current is true)"
+                                   @onchange="(e => SetProp(pm, e.Value))" />
+                            break;
+
+                        case "date":
+                            <input type="date" class="form-control"
+                                   value="@(current is DateTime dt ? dt.ToString("yyyy-MM-dd") : string.Empty)"
+                                   @onchange="(e => SetProp(pm, e.Value))" />
+                            break;
+
+                        default:
+                            <div class="text-muted">Unsupported editor: @pm.Type</div>
+                            break;
+                    }
+                </div>
+            }
+        }
+    </section>
 </div>
 
 <hr class="my-4" />

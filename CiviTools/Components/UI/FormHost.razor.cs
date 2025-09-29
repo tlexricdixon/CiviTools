@@ -5,36 +5,27 @@ namespace CiviTools.Components.UI;
 
 public partial class FormHostBase : ComponentBase
 {
-    [Parameter] public IEnumerable<ComponentNode> Nodes { get; set; } = Enumerable.Empty<ComponentNode>();
+    [Parameter]
+    public IEnumerable<ComponentNode> Nodes { get; set; } = Array.Empty<ComponentNode>();
 
-
+    // Renders a node (and its children) using DynamicComponent + parameter bag
     protected static RenderFragment RenderNode(ComponentNode node) => builder =>
     {
-        switch (node.Component)
+        // Render the node's component
+        builder.OpenComponent(0, typeof(DynamicComponent));
+        builder.AddAttribute(1, "Type", node.Component.ComponentType);
+        builder.AddAttribute(2, "Parameters", node.Component.Params);
+        builder.SetKey(node.Component.Id);
+        builder.CloseComponent();
+
+        // Render children (if any)
+        if (node.Children is { Count: > 0 })
         {
-            case Models.UiTextField tf:
-                builder.OpenComponent(0, typeof(UiTextField));
-                builder.AddAttribute(1, "Model", tf);
-                builder.CloseComponent();
-                break;
-            case Models.UiSelect sel:
-                builder.OpenComponent(0, typeof(UiSelect));
-                builder.AddAttribute(1, "Model", sel);
-                builder.CloseComponent();
-                break;
-            case Models.UiDatePicker dp:
-                builder.OpenComponent(0, typeof(UiDatePicker));
-                builder.AddAttribute(1, "Model", dp);
-                builder.CloseComponent();
-                break;
-            case Models.UiGrid grid:
-                builder.OpenComponent(0, typeof(UiGrid));
-                builder.AddAttribute(1, "Model", grid);
-                builder.CloseComponent();
-                break;
-            default:
-                builder.AddContent(0, $"Unsupported: {node.Component.GetType().Name}");
-                break;
+            var seq = 1000;
+            foreach (var child in node.Children)
+            {
+                builder.AddContent(seq++, RenderNode(child));
+            }
         }
     };
 }

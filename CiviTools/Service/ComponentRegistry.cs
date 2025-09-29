@@ -1,60 +1,55 @@
-﻿using CiviTools.Components.UI;
-using CiviTools.Models;
-using CiviTools.Models.Extentions;
+﻿using CiviTools.Models;
 namespace CiviTools.Service;
 
 public class ComponentRegistry
 {
-    public record Descriptor(
-        string TypeKey,
-        string DisplayName,
-        Func<UiComponentBase> Factory,
-        Func<IEnumerable<PropMeta>> DesignProps
-    );
-
+    public record Descriptor(string TypeKey, string DisplayName, Func<UiComponentBase> Factory);
 
     private readonly List<Descriptor> _descriptors = new();
 
-
     public ComponentRegistry()
     {
-        // Register built-ins
         Register(new Descriptor(
-            "text",
-            "Text Field",
-            () => new Models.UiTextField { Title = "Text", Placeholder = "Enter text" },
-            () => UiTextFieldBase.DesignProps
+            "text", "Text Field",
+            () => new UiTextFieldDesign
+            {
+                ComponentType = typeof(CiviTools.Components.UI.UiTextField),
+            }
         ));
-
-
-        Register(
-        new Descriptor(
-        "select",
-        "Select",
-        () => new Models.UiSelect { Title = "Select", Items = new() { "One", "Two", "Three" } },
-        () => UiSelectExtensions.DesignPropsStatic()
+        Register(new Descriptor(
+            "select", "Select",
+            () => new UiSelectDesign
+            {
+                ComponentType = typeof(CiviTools.Components.UI.UiSelect),
+            }
         ));
-
-
-        Register(
-        new Descriptor(
-        "date",
-        "Date Picker",
-        () => new Models.UiDatePicker { Title = "Date" },
-        () => UiDatePickerExtensions.DesignPropsStatic()
+        Register(new Descriptor(
+            "date", "Date Picker",
+            () => new UiDatePickerDesign
+            {
+                ComponentType = typeof(CiviTools.Components.UI.UiDatePicker),
+            }
         ));
-
-
-        Register(
-        new Descriptor(
-        "grid",
-        "Grid",
-        () => new Models.UiGrid { Title = "Grid" },
-        () => UiGridExtensions.DesignPropsStatic()
+        Register(new Descriptor(
+            "grid", "Grid",
+            () => new UiGridDesign
+            {
+                ComponentType = typeof(CiviTools.Components.UI.UiGrid),
+            }
         ));
     }
 
+    public void Register(Descriptor d)
+    {
+        // Optional: fail fast if a bad type slips in
+        var probe = d.Factory();
+        if (probe.ComponentType is null || !typeof(Microsoft.AspNetCore.Components.IComponent).IsAssignableFrom(probe.ComponentType))
+            throw new InvalidOperationException(
+                $"Descriptor '{d.DisplayName}' has invalid ComponentType '{probe.ComponentType?.FullName ?? "null"}'.");
 
-    public void Register(Descriptor d) => _descriptors.Add(d);
+        _descriptors.Add(new Descriptor(d.TypeKey, d.DisplayName, () => probe));
+    }
+
     public IEnumerable<Descriptor> All() => _descriptors;
 }
+

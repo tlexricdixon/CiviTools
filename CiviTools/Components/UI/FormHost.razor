@@ -2,11 +2,18 @@
 @inherits FormHostBase
 
 
-<div class="row" style="row-gap: 8px;">
-    @foreach (var node in Nodes)
+@foreach (var n in Nodes)
+{
+    <DynamicComponent Type="n.Component.ComponentType"
+                      Parameters="n.Component.Params"
+                      @key="n.Component.Id" />
+    @if (n.Children?.Count > 0)
     {
-        <div class="col-12">
-            @RenderNode(node)
-        </div>
+        @foreach (var c in n.Children)
+        {
+            <DynamicComponent Type="c.Component.ComponentType"
+                              Parameters="c.Component.Params"
+                              @key="c.Component.Id" />
+        }
     }
-</div>
+}

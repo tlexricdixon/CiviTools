@@ -1,17 +1,17 @@
 ﻿namespace CiviTools.Models;
 
-public class ComponentNode
+public class ComponentNode(UiComponentBase component)
 {
-    public UiComponentBase Component { get; set; }
+    public UiComponentBase Component { get; set; } = component;
     public List<ComponentNode> Children { get; set; } = new();
-    public ComponentNode(UiComponentBase component) => Component = component;
 }
-// Property metadata for design-time editing
+
+// If you like keeping Getter/Setter, make them act on the Params bag
 public record PropMeta(
-string Name,
-string Label,
-string Type, // "string", "int", "bool", "select"
-Func<UiComponentBase, object?> Getter,
-Action<UiComponentBase, object?> Setter,
-IEnumerable<(string Value, string Label)>? Options = null
+    string Name,
+    string Label,
+    string Type, // "string", "int", "bool", "int", "date", "list"
+    Func<Dictionary<string, object?>, object?> Getter,
+    Action<Dictionary<string, object?>, object?> Setter,
+    IEnumerable<(string Value, string Label)>? Options = null
 );

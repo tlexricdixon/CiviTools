@@ -1,12 +1,27 @@
 ﻿namespace CiviTools.Models;
 
-public class UiGrid : UiComponentBase
+public sealed class UiGridDesign : UiComponentBase
 {
-    // Simple demo dataset to show the grid without wiring data connectors yet
-    public IEnumerable<object> Rows { get; set; } = new List<object>
+    public UiGridDesign()
     {
-    new { Id=1, Name="Alice", Email="alice@example.com" },
-    new { Id=2, Name="Bob", Email="bob@example.com" },
-    new { Id=3, Name="Charlie", Email="charlie@example.com" },
+        Params["Title"] = "Grid";
+        Params["Cols"] = 3;
+        Params["CssClass"] = "";
+        Params["Rows"] = Array.Empty<object>(); // materialize outside in real use
+    }
+
+    public override IEnumerable<PropMeta> GetDesignProps() => new[]
+    {
+        new PropMeta("Title","Title","string",
+            b => b["Title"], (b,v) => b["Title"] = v?.ToString()
+        ),
+        new PropMeta("Cols","Columns","int",
+            b => b["Cols"], (b,v) => b["Cols"] = v is int i ? i : int.TryParse(v?.ToString(), out var ii) ? ii : 1
+        ),
+        new PropMeta("CssClass","CSS Class","string",
+            b => b["CssClass"], (b,v) => b["CssClass"] = v?.ToString()
+        ),
+        // Rows editor left out; usually bound programmatically not via panel
     };
 }
+

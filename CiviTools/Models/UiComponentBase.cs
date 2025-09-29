@@ -2,11 +2,14 @@
 
 public abstract class UiComponentBase
 {
-    public Guid Id { get; set; } = Guid.NewGuid();
-    public string Key => Id.ToString("N");
-    public string Title { get; set; } = string.Empty; // label/title in UI
+    public Guid Id { get; } = Guid.NewGuid();
+    // The Blazor component to render
+    public required Type ComponentType { get; init; }
 
-    // Common layout props
-    public int Cols { get; set; } = 12; // 1..12 grid columns
-    public string CssClass { get; set; } = string.Empty;
+    // Live parameter bag passed to DynamicComponent
+    public Dictionary<string, object?> Params { get; } = new(StringComparer.Ordinal);
+
+    // Optional: design metadata hook
+    public virtual IEnumerable<PropMeta> GetDesignProps() => Array.Empty<PropMeta>();
 }
+

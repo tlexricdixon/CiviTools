@@ -1,12 +1,45 @@
-﻿@inherits UiSelectBase
+﻿@* CiviTools/Components/UI/UiSelect.razor *@
+@inherits CiviTools.Models.UiInputBase<string>
 
+<div class="ui-select @EffectiveCssClass" style="grid-column: span @EffectiveCols;">
+    @if (!string.IsNullOrWhiteSpace(EffectiveTitle))
+    {
+        <label class="form-label">@EffectiveTitle</label>
+    }
 
-<div class="mb-3 @CssClass" style="grid-column: span @Cols">
-    <label class="form-label">@Title</label>
-    <select class="form-select" @bind="Selected">
-        @foreach (var it in Items)
+    <select class="form-select"
+            disabled="@Disabled"
+            value="@Value"
+            @onchange="OnChange">
+        @if (AllowEmptyOption)
         {
-            <option value="@it">@it</option>
+            <option value="">@EmptyLabel</option>
+        }
+        @if (Items is not null)
+        {
+            @foreach (var item in Items)
+            {
+                <option value="@item">@item</option>
+            }
         }
     </select>
+
+    @if (!string.IsNullOrWhiteSpace(Help))
+    {
+        <div class="form-text">@Help</div>
+    }
+
+    @if (EditContext is not null && ValueExpression is not null)
+    {
+        <ValidationMessage For="ValueExpression" />
+    }
 </div>
+
+@code {
+    [Parameter] public IEnumerable<string>? Items { get; set; } = Array.Empty<string>();
+    [Parameter] public bool AllowEmptyOption { get; set; } = true;
+    [Parameter] public string EmptyLabel { get; set; } = "-- select --";
+
+    private async Task OnChange(ChangeEventArgs e)
+        => await SetCurrentValueAsync(e?.Value?.ToString());
+}
